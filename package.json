@@ -12,6 +12,7 @@
     "start:e2e": "node scripts/start-e2e.mjs",
     "test": "npm --prefix server test",
     "test:e2e": "npm run build && npm --prefix e2e run test",
-    "test:all": "npm test && npm run test:e2e"
+    "test:all": "npm test && npm run test:e2e",
+    "demo": "node scripts/demo.mjs"
   }
 }
