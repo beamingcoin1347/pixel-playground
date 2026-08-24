@@ -50,6 +50,7 @@ export default function BullsCows() {
 
   return (
     <Shell
+      game="bullscows"
       title="Bulls & Cows"
       subtitle={view ? (view.mode === 'single' ? 'crack the server code' : 'crack each other') : 'four digits, bulls and cows'}
       onRestart={view ? () => game.quit() : null}

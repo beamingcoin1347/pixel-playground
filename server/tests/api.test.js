@@ -178,7 +178,7 @@ describe('leaderboard submission is server-scored', () => {
   it('refuses a submission for an unfinished game', async () => {
     const { body } = await request(app)
       .post('/api/games/timerstop')
-      .send({ mode: 'single', variant: 'perfectTen', rounds: 3 });
+      .send({ mode: 'single', variant: 'blindStop', rounds: 3 });
     await request(app).post('/api/leaderboard/timerstop').send({ gameId: body.gameId, name: 'x' }).expect(400);
   });
 

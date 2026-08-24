@@ -6,6 +6,40 @@ import { sfx } from '../sound.js';
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const CATEGORIES = ['random', 'animals', 'food', 'space', 'computing', 'sports'];
 
+/**
+ * The gallows. Six wrong guesses build the figure one limb at a time, in this order, so the
+ * drawing itself is the life counter - you can read how much trouble you are in at a glance.
+ */
+function Gallows({ wrong, doomed }) {
+  const parts = [
+    <circle key="head" className="part head" cx="132" cy="62" r="17" />,
+    <line key="body" className="part" x1="132" y1="79" x2="132" y2="134" />,
+    <line key="arm-l" className="part" x1="132" y1="92" x2="106" y2="116" />,
+    <line key="arm-r" className="part" x1="132" y1="92" x2="158" y2="116" />,
+    <line key="leg-l" className="part" x1="132" y1="134" x2="109" y2="172" />,
+    <line key="leg-r" className="part" x1="132" y1="134" x2="155" y2="172" />,
+  ];
+
+  return (
+    <svg
+      className={`gallows ${doomed ? 'doomed' : ''}`}
+      viewBox="0 0 200 210"
+      role="img"
+      aria-label={`Gallows with ${wrong} of 6 body parts drawn`}
+      data-testid="gallows"
+      data-wrong={wrong}
+    >
+      {/* the frame is always there; only the figure grows */}
+      <line className="frame" x1="24" y1="200" x2="112" y2="200" />
+      <line className="frame" x1="48" y1="200" x2="48" y2="18" />
+      <line className="frame" x1="48" y1="18" x2="132" y2="18" />
+      <line className="frame" x1="48" y1="42" x2="72" y2="18" />
+      <line className="rope" x1="132" y1="18" x2="132" y2="45" />
+      {parts.slice(0, wrong)}
+    </svg>
+  );
+}
+
 export default function Hangman() {
   const game = useGame('hangman');
   const [mode, setMode] = useState('single');
@@ -28,7 +62,8 @@ export default function Hangman() {
     if (!res) return;
     const next = res.view;
     if (next.over) {
-      next.won ? sfx.win() : sfx.lose();
+      if (next.won) sfx.win();
+      else sfx.lose();
     } else if (next.lives < view.lives) {
       sfx.bad();
     } else {
@@ -36,14 +71,18 @@ export default function Hangman() {
     }
   }
 
+  const wrong = view ? view.maxLives - view.lives : 0;
+
   function status() {
     if (!view) return '';
-    if (view.over) return view.won ? 'You got it!' : `Out of lives - the word was "${view.word}".`;
-    return `${view.lives} ${view.lives === 1 ? 'life' : 'lives'} left`;
+    if (view.over) return view.won ? 'You saved them!' : 'Out of lives.';
+    if (view.lives === 1) return 'One life left - choose carefully';
+    return `${view.lives} lives left`;
   }
 
   return (
     <Shell
+      game="hangman"
       title="Hangman"
       subtitle={view ? (view.mode === 'single' ? `category: ${view.category}` : 'a word from Player 1') : 'six lives, one word'}
       onRestart={view ? () => game.quit() : null}
@@ -52,6 +91,7 @@ export default function Hangman() {
           <>
             <span data-testid="lives">lives: {view.lives}/{view.maxLives}</span>
             <span>letters: {view.length}</span>
+            <span>guessed: {view.guessed.length}</span>
           </>
         ) : null
       }
@@ -97,7 +137,7 @@ export default function Hangman() {
           )}
           <button
             type="button"
-            className="btn primary"
+            className="btn primary big"
             data-testid="start-game"
             onClick={begin}
             disabled={game.busy || (mode === 'multi' && secret.length < 2)}
@@ -112,10 +152,20 @@ export default function Hangman() {
             {status()}
           </p>
 
-          <div className="word-mask" data-testid="mask" aria-label="the word so far">
-            {view.mask.map((ch, i) => (
-              <b key={i}>{ch ?? ''}</b>
-            ))}
+          <div className="hangman-stage">
+            <Gallows wrong={wrong} doomed={view.over && !view.won} />
+            <div>
+              <div className="word-mask" data-testid="mask" aria-label="the word so far">
+                {view.mask.map((ch, i) => (
+                  <b key={i} className={ch ? 'filled' : ''}>{ch ?? ''}</b>
+                ))}
+              </div>
+              <div className="lives-pips" aria-hidden="true">
+                {Array.from({ length: view.maxLives }, (_, i) => (
+                  <i key={i} className={i < wrong ? 'gone' : ''} />
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="keyboard" data-testid="keyboard">
@@ -138,9 +188,11 @@ export default function Hangman() {
           </div>
 
           {view.over ? (
-            <div className="center" style={{ marginTop: 22 }}>
-              <p data-testid="revealed-word">The word was <strong>{view.word}</strong>.</p>
-              <button type="button" className="btn primary" data-testid="play-again" onClick={() => game.quit()}>
+            <div className="center" style={{ marginTop: 24 }}>
+              <p data-testid="revealed-word" style={{ fontSize: 18 }}>
+                The word was <strong style={{ color: 'var(--neon-3)' }}>{view.word}</strong>.
+              </p>
+              <button type="button" className="btn primary big" data-testid="play-again" onClick={() => game.quit()}>
                 New word
               </button>
             </div>

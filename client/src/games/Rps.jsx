@@ -61,6 +61,7 @@ export default function Rps() {
 
   return (
     <Shell
+      game="rps"
       title="Rock-Paper-Scissors"
       subtitle={view ? `first to ${view.target}` : 'first to N wins the match'}
       onRestart={view ? begin : null}

@@ -93,6 +93,7 @@ export default function Lobby() {
               to={`/game/${name}`}
               className="game-card"
               data-testid={`game-link-${name}`}
+              data-game={name}
               onClick={() => sfx.click()}
             >
               <span className="emoji" aria-hidden="true">{meta.emoji}</span>

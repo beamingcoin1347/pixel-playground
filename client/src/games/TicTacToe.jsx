@@ -45,6 +45,7 @@ export default function TicTacToe() {
 
   return (
     <Shell
+      game="tictactoe"
       title="Tic-Tac-Toe"
       subtitle={view ? (view.mode === 'single' ? `vs bot (${view.difficulty})` : 'pass and play') : 'Three in a row'}
       onRestart={view ? begin : null}

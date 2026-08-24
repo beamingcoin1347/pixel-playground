@@ -96,14 +96,22 @@ other's, alternating turns.
 
 ### Timer Stop
 Timing is measured **client-side** with `performance.now()`; the server owns the config and scores
-and validates whatever the client reports. Points are `max(0, 1000 - errorMs)`, so higher is better
-and multiplayer can just compare totals.
+and validates whatever the client reports. Points are `max(0, 1000 - miss)`, so higher is better
+and multiplayer can just compare totals. Every target is drawn per session from the seeded rng and
+snapped to 100ms, so no target can be memorised between runs.
+
+The three variations do not all measure the same thing, and the engine says so rather than
+pretending otherwise. `scoreAttempt` returns `errorMs` for the two clock games (distance from the
+target, either direction) and `reactionMs` for Green Light (time *after* the light). `publicView`
+publishes a `measures` field naming which one applies, and the client labels its column from that.
+Collapsing both into a single "error" number is what previously made the Green Light table print
+wall-clock time under an "Error" heading - a real bug, now covered by tests in both suites.
 
 | Variation | Rule |
 |---|---|
-| Stop the Clock | target between 3.00s and 9.00s, shown; clock visible |
-| Perfect Ten | stop at exactly 10.00s; the clock is hidden while running |
-| Green Light | wait for green (1.00–4.00s), then react; tapping early busts for 0 |
+| Stop the Clock | random target, 3.00–9.00s, shown; clock and progress ring visible |
+| Blind Stop | random target, 4.00–12.00s, shown; the clock reads `??.??` while running |
+| Green Light | light turns green at a random 1.00–4.00s; tapping early busts for 0 |
 
 *Trade-off worth naming:* because the spec puts timing on the client, `greenAtMs` has to be sent to
 the browser so it can render the light. A determined player could read it from the network tab. The
@@ -205,13 +213,13 @@ That is deliberate: it lets `start-e2e.mjs` serve the real production bundle whi
 
 ## 8. Test coverage
 
-**Server — 99 tests** across 9 files: pure-engine rules for all six games (win/draw detection,
+**Server — 103 tests** across 9 files: pure-engine rules for all six games (win/draw detection,
 multiset scoring, life counting, phase transitions, tie handling), all three bot difficulties
 including a self-play draw proof, PRNG determinism, leaderboard ordering and capping, and 19
 Supertest API tests covering session lifecycle, error codes, secret non-leakage, seed determinism,
 production route-gating, and server-side scoring.
 
-**Browser — 13 tests**: lobby, routing fallback, both Tic-Tac-Toe modes, an RPS round, both Hangman
+**Browser — 15 tests**: lobby, routing fallback, both Tic-Tac-Toe modes, an RPS round, both Hangman
 modes, both Bulls & Cows modes, two Timer Stop variations, a full Imposter round, leaderboard
 submission end-to-end, and the shell's navigation and mute toggle.
 

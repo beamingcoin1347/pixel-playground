@@ -72,7 +72,7 @@ test('hangman: player 1 sets a word and player 2 guesses it', async ({ page }) =
     await page.getByTestId(`key-${letter}`).click();
   }
 
-  await expect(page.getByTestId('status')).toContainText('You got it');
+  await expect(page.getByTestId('status')).toContainText('You saved them');
   await expect(page.getByTestId('revealed-word')).toContainText('banana');
 });
 
@@ -85,6 +85,8 @@ test('hangman: a wrong guess costs a life and the word stays hidden', async ({ p
   await expect(page.getByTestId('lives')).toContainText('6/6');
   await page.getByTestId('key-z').click();
   await expect(page.getByTestId('lives')).toContainText('5/6');
+  // The drawing is the life counter: one wrong guess, one body part.
+  await expect(page.getByTestId('gallows')).toHaveAttribute('data-wrong', '1');
   await expect(page.getByTestId('key-z')).toBeDisabled();
   // Nothing on the page gives the word away mid-round.
   await expect(page.locator('body')).not.toContainText('banana');
@@ -130,8 +132,40 @@ test('timer stop: tapping before the green light busts the round', async ({ page
   await page.getByTestId('start-timer').click();
   await page.getByTestId('stop-timer').click(); // far too early - the light is still red
 
-  await expect(page.getByTestId('result-p1-0')).toContainText('too early');
+  await expect(page.getByTestId('result-p1-0')).toContainText('jumped the gun');
   await expect(page.getByTestId('total-p1')).toContainText('0');
+  // Regression: Green Light measures REACTION time, not distance from a target. The table
+  // used to label it Error and print the wall-clock time, which read as nonsense.
+  await expect(page.getByTestId('measure-head')).toHaveText('Reaction');
+  await expect(page.getByTestId('results')).not.toContainText('Error');
+});
+
+test('timer stop: the clock games label their miss as an error, not a reaction', async ({ page }) => {
+  await page.goto('/game/timerstop');
+  await page.getByTestId('mode-single').click();
+  await page.getByTestId('variant-stopTheClock').click();
+  await page.getByTestId('rounds-1').click();
+  await page.getByTestId('start-game').click();
+
+  await expect(page.getByTestId('target')).toContainText('target');
+  await page.getByTestId('start-timer').click();
+  await page.waitForTimeout(200);
+  await page.getByTestId('stop-timer').click();
+  await expect(page.getByTestId('measure-head')).toHaveText('Error');
+});
+
+test('blind stop hides the clock while it runs', async ({ page }) => {
+  await page.goto('/game/timerstop');
+  await page.getByTestId('mode-single').click();
+  await page.getByTestId('variant-blindStop').click();
+  await page.getByTestId('rounds-1').click();
+  await page.getByTestId('start-game').click();
+
+  await expect(page.getByTestId('clock')).toHaveText('0.00');
+  await page.getByTestId('start-timer').click();
+  await expect(page.getByTestId('clock')).toHaveText('??.??');
+  await page.getByTestId('stop-timer').click();
+  await expect(page.getByTestId('result-p1-0')).toBeVisible();
 });
 
 test('timer stop: a finished run can be saved to the leaderboard', async ({ page }) => {

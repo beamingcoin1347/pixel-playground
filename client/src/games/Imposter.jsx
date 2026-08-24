@@ -56,6 +56,7 @@ export default function Imposter() {
 
   return (
     <Shell
+      game="imposter"
       title="Guess the Imposter"
       subtitle={view ? `${view.playerCount} players, ${view.imposterCount} imposter${view.imposterCount > 1 ? 's' : ''}` : 'same-screen social deduction'}
       onRestart={view ? () => game.quit() : null}

@@ -120,9 +120,10 @@ export const GAMES = {
       const mode = requireMode(body, ['single', 'multi']);
       const variant = timerstop.VARIANTS.includes(body.variant) ? body.variant : 'stopTheClock';
       let config;
-      if (variant === 'greenLight') config = { greenAtMs: 1000 + rngInt(rng, 3001) };
-      else if (variant === 'perfectTen') config = { targetMs: 10000 };
-      else config = { targetMs: 3000 + rngInt(rng, 6001) };
+      // Every target is randomised per session and snapped to 100ms so it reads cleanly.
+      if (variant === 'greenLight') config = { greenAtMs: (10 + rngInt(rng, 31)) * 100 };     // 1.0-4.0s
+      else if (variant === 'blindStop') config = { targetMs: (40 + rngInt(rng, 81)) * 100 };  // 4.0-12.0s
+      else config = { targetMs: (30 + rngInt(rng, 61)) * 100 };                               // 3.0-9.0s
       return timerstop.createState({ mode, variant, config, rounds: body.rounds ?? 3 });
     },
     move(state, body, _rng) {

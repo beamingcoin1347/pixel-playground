@@ -10,7 +10,7 @@ renders what the server allows it to see.
 | Rock-Paper-Scissors | vs a bot that learns your favourite throw | secret pass-and-play picks |
 | Hangman | server picks a word by category | Player 1 types the secret word |
 | Bulls & Cows | crack the server's 4-digit code | dual secrets, first to crack wins |
-| Timer Stop | three reaction variations | take turns, high score wins |
+| Timer Stop | three reaction variations, random targets | take turns, high score wins |
 | Guess the Imposter | — | 3–10 players, multiplayer only |
 
 ## Requirements
@@ -37,8 +37,8 @@ Express serves the built client itself on **4100**.
 ## Test it
 
 ```bash
-npm test          # 99 server tests  (Vitest unit + Supertest API)
-npm run test:e2e  # 13 browser tests (Playwright; builds the client first)
+npm test          # 103 server tests  (Vitest unit + Supertest API)
+npm run test:e2e  # 15 browser tests (Playwright; builds the client first)
 npm run test:all  # both
 ```
 

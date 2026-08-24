@@ -4,12 +4,12 @@ import { api } from '../api.js';
 import { isMuted, setMuted, onMuteChange, sfx } from '../sound.js';
 
 /** Consistent shell for every game: back link, title, restart, mute, optional scoreboard. */
-export function Shell({ title, subtitle, onRestart, scoreboard, children }) {
+export function Shell({ game, title, subtitle, onRestart, scoreboard, children }) {
   const [muted, setLocalMuted] = useState(isMuted);
   useEffect(() => onMuteChange(setLocalMuted), []);
 
   return (
-    <div className="shell">
+    <div className="shell" data-game={game}>
       <header className="shell-bar">
         <Link className="btn ghost" to="/" data-testid="back-to-lobby" onClick={() => sfx.click()}>
           &larr; Lobby
